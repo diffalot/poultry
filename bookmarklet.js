@@ -47,7 +47,7 @@
         lastAvatar = v.children[0].src;
         window.lastText = v.children;
       } else {
-        console.log('ignoring');
+        console.log('poultry ignoring');
       }
     });
   };
