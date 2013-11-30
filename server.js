@@ -3,23 +3,7 @@ var express = require('express'),
 
 var OAuth= require('oauth').OAuth;
 
-var getSharedSecretForUserFunction = function(user,  callback) {
-	var result;
-	if(user == 'foo')
-		result= 'bar';
-	callback(null, result);
-};
-
-var validatePasswordFunction = function(username, password, successCallback, failureCallback){
-	if (username === 'foo' && password === "bar"){
-		successCallback();
-	} else {
-		failureCallback();
-	}
-};
-
-// N.B. TO USE Any of the OAuth or RPX strategies you will need to provide
-// a copy of the example_keys_file (named keys_file)
+// load twitter auth keys
 try {
   var example_keys= require('./auth_keys');
   for(var key in example_keys) {
