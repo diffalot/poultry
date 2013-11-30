@@ -11,7 +11,7 @@
   var lastAvatar = null;
   var lastText = null;
   var setAvatar = function() {
-    console.log('uploading');
+    console.log('poultry uploading');
     console.dir(twitter);
     console.dir(lastAvatar);
     twitter.post({
@@ -20,7 +20,7 @@
     });
   };
   var sendTweet = function() {
-    console.log('sending tweet');
+    console.log('poultry sending tweet');
     console.dir(twitter);
     console.dir(lastAvatar);
     console.log(lastText);
@@ -30,7 +30,7 @@
     });
   };
   var authTwitter = function() {
-    console.log('authorizing');
+    console.log('poultry authorizing');
     OAuth.initialize('F6-Ns5MMCaG6zp4BkC-Ikfq3o-0');
     OAuth.popup('twitter', function(error, result){
       twitter = result;
