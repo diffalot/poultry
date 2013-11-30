@@ -1,6 +1,6 @@
 /* Poultry, a twitter avatar updater for chat.meatspac.es
  * installed with the following bookmarklet:
- *     javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://meat.lightcorp.net/javascripts/fowl-meat.js';})();
+ *     javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://poultry.mtos.co/index.js';})();
  */
 (function ($) {
   'use strict';
@@ -35,9 +35,9 @@
     OAuth.popup('twitter', function(error, result){
       twitter = result;
       console.log(result);
-      $('#fowl-meat').hide();
-      $('.menu').append('<li><a id="fowl-avatar" href="javascript:;">Set Twitter Avatar</a></li>').children().last().click(setAvatar);
-      $('.menu').append('<li><a id="fowl-tweet" href="javascript:;">Send Tweet</a></li>').children().last().click(sendTweet);
+      $('#poultry-auth').hide();
+      $('.menu').append('<li><a id="poultry-avatar" href="javascript:;">Set Twitter Avatar</a></li>').children().last().click(setAvatar);
+      $('.menu').append('<li><a id="poultry-tweet" href="javascript:;">Send Tweet</a></li>').children().last().click(sendTweet);
     });
   };
   var watch = function(addedNodes) {
@@ -60,6 +60,6 @@
     });
   });
   observer.observe(document.querySelector('div.chats ul'), {childList: true});
-  $('.menu').append('<li><a id="fowl-meat" href="javascript:;">Authorize Twitter</a></li>').children().last().click(authTwitter);
-  console.log('fowl loaded');
+  $('.menu').append('<li><a id="poultry-auth" href="javascript:;">Authorize Twitter</a></li>').children().last().click(authTwitter);
+  console.log('poultry loaded');
 }($));
