@@ -1,7 +1,5 @@
-var connect = require('connect'),
-    auth= require('connect-auth'),
-    url = require('url'),
-    fs = require('fs');
+var express = require('express'),
+    auth= require('connect-auth');
 
 var OAuth= require('oauth').OAuth;
 
@@ -33,79 +31,52 @@ catch(e) {
   return;
 }
 
-// Setup the 'template' pages (don't use sync calls generally, but meh.)
-var authenticatedContent= fs.readFileSync( __dirname+"/authenticated.html", "utf8" );
-var unAuthenticatedContent= fs.readFileSync( __dirname+"/unauthenticated.html", "utf8" );
-
-// There appear to be Scurrilous ;) rumours abounding that connect-auth
-// doesn't 'work with connect' as it does not act like an 'onion skin'
-// to address this I'm showing how one might extend the *PRIMITIVES*
-// provided by connect-auth to simplify a middleware layer.
-
-// This middleware detects login requests (in this case requests with a query param of ?login_with=xxx where xxx is a known strategy)
-var example_auth_middleware= function() {
-  return function(req, res, next) {
-    var urlp= url.parse(req.originalUrl, true)
-    if( urlp.query.login_with ) {
-      req.authenticate([urlp.query.login_with], function(error, authenticated) {
-        if( error ) {
-          // Something has gone awry, behave as you wish.
-          console.log( error );
-          res.end();
-      }
-      else {
-          if( authenticated === undefined ) {
-            // The authentication strategy requires some more browser interaction, suggest you do nothing here!
-          }
-          else {
-            if( urlp.query.login_with == "persona" && authenticated === false ) {
-              // persona behaves differently to the other strategies as it is async-to-the-page POST.
-              res.writeHead(401, "" );
-              res.end()
-            }
-            else {
-              if( authenticated == true ) {
-                req.getAuthDetails().activeStrategy= urlp.query.login_with;
-              }
-              // We've either failed to authenticate, or succeeded (req.isAuthenticated() will confirm, as will the value of the received argument)
-              next();
-            }
-          }
-      }});
-    }
-    else {
-      next();
-    }
-  }
-};
-
 process.on('uncaughtException', function (err) {
   console.log('Caught exception: ' + err.stack);
 });
 
-var app= connect();
-app.use(connect.static(__dirname + '/dist'))
-   .use(connect.cookieParser('my secret here'))
-   .use(connect.session())
-   .use(connect.bodyParser())
+var app= express();
+app.use(express.static(__dirname + '/dist'))
+   .use(express.cookieParser('my secret here'))
+   .use(express.session())
+   .use(express.bodyParser())
    .use(auth({strategies:[
               auth.Twitter({consumerKey: twitterConsumerKey, consumerSecret: twitterConsumerSecret})],
               trace: true,
-              logoutHandler: require('./events').redirectOnLogout("/")}))
-   .use(example_auth_middleware())
-   .use('/logout', function(req, res, params) {
-     req.logout(); // Using the 'event' model to do a redirect on logout.
-   })
-   .use("/", function(req, res, params) {
-     res.writeHead(200, {'Content-Type': 'text/html'})
-     if( req.isAuthenticated() ) {
-        console.log('authorized');
-       var logoutApproach= "<a href='/logout'>Logout</a>";
-       res.end( authenticatedContent.replace("#USER#", JSON.stringify( req.getAuthDetails().user )  )
-                                       .replace("#LOGOUTAPPROACH#", logoutApproach) );
-     }
-     else {
-       res.end( unAuthenticatedContent.replace("#PAGE#", req.originalUrl));
-     }
-   })
-   .listen(9001);
+              logoutHandler: require('connect-auth/lib/events').redirectOnLogout("/")}));
+
+app.get('/', function(req, res){
+    if(req.isAuthenticated()){
+        res.send(req.session.auth.user);
+    }else{
+        res.send('false');
+    }
+});
+
+app.get('/logout', function(req, res){
+    req.logout();
+});
+
+app.get('/login', function(req, res){
+    req.authenticate(['twitter'], function(error, authenticated){
+        console.log(arguments);
+
+        if( error ) {
+            // Something has gone awry, behave as you wish.
+            console.log( error );
+            res.end();
+        }
+        else {
+            if( authenticated === undefined ) {
+                // The authentication strategy requires some more browser interaction, suggest you do nothing here!
+            }
+            else {
+                console.log(arguments);
+                // We've either failed to authenticate, or succeeded (req.isAuthenticated() will confirm, as will the value of the received argument)
+                //next();
+                res.redirect('/');
+            }
+        }});
+})
+
+app.listen(9001);
