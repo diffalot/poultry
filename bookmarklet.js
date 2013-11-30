@@ -1,6 +1,6 @@
 /* Poultry, a twitter avatar updater for chat.meatspac.es
  * installed with the following bookmarklet:
- *     javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://poultry.mtos.co/index.js';})();
+ *     javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://poultry.mtos.co/bookmarklet.js';})();
  */
 (function ($) {
   'use strict';
