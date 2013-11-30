@@ -1,5 +1,5 @@
 var express = require('express'),
-    auth= require('connect-auth');
+auth= require('connect-auth');
 
 var OAuth= require('oauth').OAuth;
 
@@ -15,69 +15,64 @@ catch(e) {
   return;
 }
 
+// handle random errors
 process.on('uncaughtException', function (err) {
   console.log('Caught exception: ' + err.stack);
 });
 
-var app= express();
-app.use(express.static(__dirname + '/dist'))
-   .use(express.cookieParser('my secret here'))
-   .use(express.session())
-   .use(express.bodyParser())
-   .use(auth({strategies:[
-              auth.Twitter({consumerKey: twitterConsumerKey, consumerSecret: twitterConsumerSecret})],
-              trace: true,
-              logoutHandler: require('connect-auth/lib/events').redirectOnLogout("/")}));
+// allow CORS via middleware
+var allowCrossDomain = function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', allowedDomains);
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+}
 
-app.get('/', function(req, res){
+var app = express()
+  .use(express.static(__dirname + '/dist'))
+  .use(express.cookieParser(cookieSecret))
+  .use(express.session('poultry'))
+  .use(express.bodyParser())
+  .use(allowCrossDomain)
+  .use(auth({
+    strategies:[ auth.Twitter({
+      consumerKey: twitterConsumerKey,
+      consumerSecret: twitterConsumerSecret
+    })],
+    trace: true,
+    logoutHandler: require('connect-auth/lib/events').redirectOnLogout("/")
+  }))
+  .get('/', function(req, res){
     if(req.isAuthenticated()){
-        res.send(req.session.auth.user);
+      res.send('you\'re logged in!');
     }else{
-        res.send('false');
+      res.send('not logged in');
     }
-});
-
-app.get('/logout', function(req, res){
+  })
+  .get('/logout', function(req, res){
     req.logout();
-});
-
-app.get('/login', function(req, res){
+  })
+  .get('/login', function(req, res){
     req.authenticate(['twitter'], function(error, authenticated){
-        console.log(arguments);
-
-        if( error ) {
-            // Something has gone awry, behave as you wish.
-            console.log( error );
-            res.end();
-        }
+      console.log(arguments);
+      if( error ) {
+        console.log( error );
+        res.end();
+      }
+      else {
+        if( authenticated === undefined ) {}
         else {
-            if( authenticated === undefined ) {
-                // The authentication strategy requires some more browser interaction, suggest you do nothing here!
-            }
-            else {
-                console.log(arguments);
-                // We've either failed to authenticate, or succeeded (req.isAuthenticated() will confirm, as will the value of the received argument)
-                //next();
-                res.redirect('/');
-            }
-        }});
-})
-
-app.get('/sendTweet', function(res, req) {
-  console.dir(res, req);
-  if(req.isAuthenticated()){
-    res.send(req.session);
-  }else{
-    res.send('false');
-  }
-});
-app.post('/sendTweet', function(res, req) {
-  console.dir(res, req);
-  if(req.isAuthenticated()){
-    res.send(req.session);
-  }else{
-    res.send('false');
-  }
-});
-
-app.listen(9001);
+          console.log(arguments);
+          res.redirect('/');
+        }
+      }});
+  })
+  .post('/sendTweet', function(req, res) {
+    if(req.isAuthenticated()){
+      console.dir(req);
+      res.send('complete');
+    }else{
+      res.send('false');
+    }
+  })
+  .listen(9001);

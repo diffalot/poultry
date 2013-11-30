@@ -4,7 +4,7 @@
  */
 (function ($) {
   'use strict';
-  var OAuth = require('oauth').OAuth;
+  //var OAuth = require('oauth').OAuth;
   var fingerprint = $('input[name=userid]').val();
   var twitter = undefined;
   var lastAvatar = null;
@@ -20,31 +20,28 @@
   };
   var sendTweet = function() {
     console.log('poultry sending tweet');
-    console.dir(twitter);
     console.dir(lastAvatar);
     console.log(lastText);
-    twitter.post({
-      url: '/1.1/status/send_update',
-      data: lastAvatar
+    $.ajax({
+      type: 'POST',
+      crossDomain: true,
+      contentType: 'json',
+      url: 'https://poultry.mtos.co/sendTweet',
+      data: { text: lastText, image: lastAvatar }
     });
   };
   var authTwitter = function() {
     console.log('poultry authorizing');
-    OAuth.initialize('F6-Ns5MMCaG6zp4BkC-Ikfq3o-0');
-    OAuth.popup('twitter', function(error, result){
-      twitter = result;
-      console.log(result);
-      $('#poultry-auth').hide();
-      $('.menu').append('<li><a id="poultry-avatar" href="javascript:;">Set Twitter Avatar</a></li>').children().last().click(setAvatar);
-      $('.menu').append('<li><a id="poultry-tweet" href="javascript:;">Send Tweet</a></li>').children().last().click(sendTweet);
-    });
+    $('#poultry-auth').hide();
+    $('.menu').append('<li><a id="poultry-avatar" href="javascript:;">Set Twitter Avatar</a></li>').children().last().click(setAvatar);
+    $('.menu').append('<li><a id="poultry-tweet" href="javascript:;">Send Tweet</a></li>').children().last().click(sendTweet);
   };
   var watch = function(addedNodes) {
     $(addedNodes).each(function(i,v) {
       console.log(fingerprint, v.dataset.fingerprint);
       if (fingerprint === v.dataset.fingerprint) {
         lastAvatar = v.children[0].src;
-        window.lastText = v.children;
+        lastText = 'testing something'; //v.children;
       } else {
         console.log('poultry ignoring');
       }
@@ -59,6 +56,6 @@
     });
   });
   observer.observe(document.querySelector('div.chats ul'), {childList: true});
-  $('.menu').append('<li><a id="poultry-auth" href="javascript:;">Authorize Twitter</a></li>').children().last().click(authTwitter);
+  $('.menu').append('<li><a id="poultry-auth" target="_BLANK" href="https://poultry.mtos.co/login">Authorize Twitter</a></li>').children().last().click(authTwitter);
   console.log('poultry loaded');
 }($));
