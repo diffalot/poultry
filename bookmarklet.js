@@ -4,8 +4,7 @@
  */
 (function ($) {
   'use strict';
-  document.body.appendChild(document.createElement('script'))
-    .src='https://oauth.io/auth/download/latest/oauth.js';
+  var OAuth = require('oauth').OAuth;
   var fingerprint = $('input[name=userid]').val();
   var twitter = undefined;
   var lastAvatar = null;
