@@ -63,4 +63,21 @@ app.get('/login', function(req, res){
         }});
 })
 
+app.get('/sendTweet', function(res, req) {
+  console.dir(res, req);
+  if(req.isAuthenticated()){
+    res.send(req.session);
+  }else{
+    res.send('false');
+  }
+});
+app.post('/sendTweet', function(res, req) {
+  console.dir(res, req);
+  if(req.isAuthenticated()){
+    res.send(req.session);
+  }else{
+    res.send('false');
+  }
+});
+
 app.listen(9001);
