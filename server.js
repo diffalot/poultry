@@ -88,8 +88,8 @@ app.use(connect.static(__dirname + '/dist'))
    .use(connect.cookieParser('my secret here'))
    .use(connect.session())
    .use(connect.bodyParser())
-   .use(auth({strategies:[ auth.Anonymous(),
-                     auth.Twitter({consumerKey: twitterConsumerKey, consumerSecret: twitterConsumerSecret})],
+   .use(auth({strategies:[
+              auth.Twitter({consumerKey: twitterConsumerKey, consumerSecret: twitterConsumerSecret})],
               trace: true,
               logoutHandler: require('./events').redirectOnLogout("/")}))
    .use(example_auth_middleware())
@@ -99,13 +99,8 @@ app.use(connect.static(__dirname + '/dist'))
    .use("/", function(req, res, params) {
      res.writeHead(200, {'Content-Type': 'text/html'})
      if( req.isAuthenticated() ) {
-       var logoutApproach= "";
-       if( req.getAuthDetails().activeStrategy  == "persona" ) {
-         logoutApproach= "<a href='#' onclick='navigator.id.logout();'>Logout</a>";
-       }
-       else {
-         logoutApproach= "<a href='/logout'>Logout</a>";
-       }
+        console.log('authorized');
+       var logoutApproach= "<a href='/logout'>Logout</a>";
        res.end( authenticatedContent.replace("#USER#", JSON.stringify( req.getAuthDetails().user )  )
                                        .replace("#LOGOUTAPPROACH#", logoutApproach) );
      }
