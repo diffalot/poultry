@@ -2,9 +2,9 @@
  * installed with the following bookmarklet:
  *     javascript:(function(){document.body.appendChild(document.createElement('script')).src='https://poultry.mtos.co/bookmarklet.js';})();
  */
-(function ($) {
+(function (window, $) {
   'use strict';
-  var OAuth = require('./oauth');
+  var OA = require('./oauth');
   var fingerprint = $('input[name=userid]').val();
   var twitter = undefined;
   var lastAvatar = null;
@@ -30,15 +30,37 @@
       data: { text: lastText, image: lastAvatar }
     });
   };
+  var doOAuth = function(code) {
+    OAuth.initialize('F6-Ns5MMCaG6zp4BkC-Ikfq3o-0');
+    OAuth.popup('twitter', { 'state': code }, function(error, response) {
+      console.log('popup ran');
+      console.dir(response);
+      $.ajax({
+        url: 'https://poultry.mtos.co/authTwitter',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+          code: response.code,
+          key: 'F6-Ns5MMCaG6zp4BkC-Ikfq3o-0'
+        },
+        success: function(state, status, xhr){
+          console.log('response from twitter?');
+          console.dir(state);
+        }
+      });
+    });
+  };
   var authTwitter = function() {
     console.log('poultry authorizing');
     $.ajax({
+      url: 'https://poultry.mtos.co/authState',
       type: 'GET',
-      crossDomain: true,
-      contentType: 'json',
-      url: 'https://poultry.mtos.co/sendTweet',
-      success: function(data, status, xhr) {
-        console.dir(data, status, xhr);
+      dataType: 'json',
+      success: function(state, status, xhr){
+        console.log('poultry received secret code');
+        var code = state.oauthio_state;
+        console.log(code);
+        doOAuth(code);
       }
     });
     $('#poultry-auth').hide();
@@ -67,4 +89,4 @@
   observer.observe(document.querySelector('div.chats ul'), {childList: true});
   $('.menu').append('<li><a id="poultry-auth" href="javascript:;">Authorize Twitter</a></li>').children().last().click(authTwitter);
   console.log('poultry loaded');
-}($));
+}(window, jQuery));

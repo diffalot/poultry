@@ -1,7 +1,13 @@
 var express = require('express'),
-auth= require('connect-auth');
+    auth= require('connect-auth'),
+    request = require('request'),
+    uuid = require('node-uuid'),
+    browserify = require('browserify');
 
 var OAuth= require('oauth').OAuth;
+
+
+
 
 // load twitter auth keys
 try {
@@ -45,24 +51,54 @@ var protect = function(req, res, next) {
 };
 
 var app = express()
-  .use(express.static(__dirname + '/dist'))
   .use(express.cookieParser(cookieSecret))
   .use(express.session())
+  .use(express.bodyParser())
   .use(auth(
     [ auth.Twitter({ consumerKey: twitterConsumerKey, consumerSecret: twitterConsumerSecret }) ]
   ))
   .use(allowCrossDomain)
-  .get('/', protect, function(req, res){
+  .get('/', function(req, res){
     if(req.isAuthenticated()){
       res.send('you\'re logged in!');
     }else{
       res.send('not logged in');
     }
   })
-  .post('/sendTweet', protect, function(req, res) {
-    console.dir(req);
+  .get('/bookmarklet.js', function(req, res){
+    var b = browserify();
+    b.add('./bookmarklet.js');
+    b.bundle().pipe(res);
   })
-  .get('/sendTweet', protect, function(req, res) {
-    console.dir(req);
+  .get('/authState', function(req, res) {
+    console.log('generating state');
+    // generate a token for this session
+    var csrf_token = uuid.v4();
+    req.session.csrf_tokens = req.session.csrf_tokens || [];
+    req.session.csrf_tokens.push(csrf_token);
+    if (req.session.csrf_tokens.length > 4) {
+      req.session.csrf_tokens.shift();
+    }
+    console.log(req.session);
+    res.send({oauthio_state: csrf_token});
+  })
+  .post('/authTwitter', function(req, res) {
+    console.log('receiving a state');
+    console.log(req.body.code);
+    request.post({
+      url: 'https://oauth.io/auth/access_token',
+      json: {
+        code: req.body.code,
+        key: 'F6-Ns5MMCaG6zp4BkC-Ikfq3o-0',
+        secret: oauthIOSecret
+      }
+    },
+    function(error, response, body) {
+      console.log('response from twitter?');
+      console.dir(body);
+      res.send('server received credentials');
+    });
+
+
   })
   .listen(9001);
