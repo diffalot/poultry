@@ -4,7 +4,7 @@
  */
 (function ($) {
   'use strict';
-  //var OAuth = require('oauth').OAuth;
+  var OAuth = require('./oauth');
   var fingerprint = $('input[name=userid]').val();
   var twitter = undefined;
   var lastAvatar = null;
@@ -65,6 +65,6 @@
     });
   });
   observer.observe(document.querySelector('div.chats ul'), {childList: true});
-  $('.menu').append('<li><a id="poultry-auth" href="javascript:;">Authorize Twitter</a></li>').children().last().click(sendTweet);
+  $('.menu').append('<li><a id="poultry-auth" href="javascript:;">Authorize Twitter</a></li>').children().last().click(authTwitter);
   console.log('poultry loaded');
 }($));
