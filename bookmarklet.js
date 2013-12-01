@@ -32,6 +32,15 @@
   };
   var authTwitter = function() {
     console.log('poultry authorizing');
+    $.ajax({
+      type: 'GET',
+      crossDomain: true,
+      contentType: 'json',
+      url: 'https://poultry.mtos.co/sendTweet',
+      success: function(data, status, xhr) {
+        console.dir(data, status, xhr);
+      }
+    });
     $('#poultry-auth').hide();
     $('.menu').append('<li><a id="poultry-avatar" href="javascript:;">Set Twitter Avatar</a></li>').children().last().click(setAvatar);
     $('.menu').append('<li><a id="poultry-tweet" href="javascript:;">Send Tweet</a></li>').children().last().click(sendTweet);
@@ -56,6 +65,6 @@
     });
   });
   observer.observe(document.querySelector('div.chats ul'), {childList: true});
-  $('.menu').append('<li><a id="poultry-auth" target="_BLANK" href="https://poultry.mtos.co/login">Authorize Twitter</a></li>').children().last().click(authTwitter);
+  $('.menu').append('<li><a id="poultry-auth" href="javascript:;">Authorize Twitter</a></li>').children().last().click(sendTweet);
   console.log('poultry loaded');
 }($));

@@ -26,53 +26,43 @@ var allowCrossDomain = function(req, res, next) {
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   next();
-}
+};
+// require twitter authentication for some things
+var protect = function(req, res, next) {
+  if( req.isAuthenticated() ) next();
+  else {
+    req.authenticate(function(error, authenticated) {
+      if( error ) next(new Error("Problem authenticating"));
+      else {
+        if( authenticated === true)next();
+        else if( authenticated === false ) next(new Error("Access Denied!"));
+        else {
+          // Abort processing, browser interaction was required (and has happened/is happening)
+        }
+      }
+    })
+  }
+};
 
 var app = express()
   .use(express.static(__dirname + '/dist'))
   .use(express.cookieParser(cookieSecret))
-  .use(express.session('poultry'))
-  .use(express.bodyParser())
+  .use(express.session())
+  .use(auth(
+    [ auth.Twitter({ consumerKey: twitterConsumerKey, consumerSecret: twitterConsumerSecret }) ]
+  ))
   .use(allowCrossDomain)
-  .use(auth({
-    strategies:[ auth.Twitter({
-      consumerKey: twitterConsumerKey,
-      consumerSecret: twitterConsumerSecret
-    })],
-    trace: true,
-    logoutHandler: require('connect-auth/lib/events').redirectOnLogout("/")
-  }))
-  .get('/', function(req, res){
+  .get('/', protect, function(req, res){
     if(req.isAuthenticated()){
       res.send('you\'re logged in!');
     }else{
       res.send('not logged in');
     }
   })
-  .get('/logout', function(req, res){
-    req.logout();
+  .post('/sendTweet', protect, function(req, res) {
+    console.dir(req);
   })
-  .get('/login', function(req, res){
-    req.authenticate(['twitter'], function(error, authenticated){
-      console.log(arguments);
-      if( error ) {
-        console.log( error );
-        res.end();
-      }
-      else {
-        if( authenticated === undefined ) {}
-        else {
-          console.log(arguments);
-          res.redirect('/');
-        }
-      }});
-  })
-  .post('/sendTweet', function(req, res) {
-    if(req.isAuthenticated()){
-      console.dir(req);
-      res.send('complete');
-    }else{
-      res.send('false');
-    }
+  .get('/sendTweet', protect, function(req, res) {
+    console.dir(req);
   })
   .listen(9001);
